@@ -4,7 +4,16 @@ from PIL import Image
 from util import *
 from scrap import *
 import numpy as np
-from webcolors import rgb_to_name
-import pytesseract
+from jpype import *
 
-# amount = round(percentage(1, extract_numbers(getScrap())))
+startJVM("-ea", classpath=["RustWheel.jar"])
+wheelClass = JClass("net.kealands.Main")
+
+wheel = getWheelCircle(1, 0)
+
+wheelClass.start()
+print("red: ", wheelClass.getRed(), " blue: ", wheelClass.getBlue(), " pink: ", wheelClass.getPink())
+
+cv2.imshow("image", wheel)
+cv2.waitKey(0)
+cv2.destroyAllWindows()

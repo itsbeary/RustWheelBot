@@ -3,17 +3,12 @@ import cv2
 import numpy as np
 import pyautogui
 import re
-from scipy import ndimage
+
 from PIL import Image
 import pytesseract
-import imutils
-from scipy.spatial import KDTree
-import webcolors
 
 
-
-
-def getWheelCircle():
+def getWheelCircle(contrast, brightness):
     x, y, width, height = 630, 220, 620, 390
     screenshot = pyautogui.screenshot(region=(x, y, width, height))
 
@@ -26,18 +21,18 @@ def getWheelCircle():
 
     cropped_img = cv2.bitwise_and(screenshot, screenshot, mask=mask)
 
-    #h, w = cropped_img.shape[:2]
-    #M = cv2.getRotationMatrix2D((w/2, h/2), -40, 1)
-    #rotated_img = cv2.warpAffine(cropped_img, M, (w, h))
-    #height, width = rotated_img.shape[:2]
-    #img = rotated_img[:, :width//2]
+    h, w = cropped_img.shape[:2]
+    M = cv2.getRotationMatrix2D((w/2, h/2), -40, 1)
+    rotated_img = cv2.warpAffine(cropped_img, M, (w, h))
+    height, width = rotated_img.shape[:2]
+    img = rotated_img[:, :width//2]
 
-    #M = cv2.getRotationMatrix2D(center, -90, 1.0)
+    M = cv2.getRotationMatrix2D(center, -90, 1.0)
+    img  = cv2.warpAffine(img, M, (w, h))
 
-    # Perform rotation
-    #img  = cv2.warpAffine(img, M, (w, h))
+    img = cv2.addWeighted( img, contrast, img, 0, brightness)
 
-    img = cv2.cvtColor(cropped_img, cv2.COLOR_RGB2BGR)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     cv2.imwrite('tmp.png', img)
     return img
 

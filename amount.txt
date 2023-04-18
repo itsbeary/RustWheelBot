@@ -1,0 +1,3 @@
+Gray:5
+Yellow:5
+Green:3
