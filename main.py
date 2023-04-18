@@ -10,9 +10,10 @@ startJVM("-ea", classpath=["RustWheel.jar"])
 wheelClass = JClass("net.kealands.Main")
 
 wheel = getWheelCircle(1, 0)
-
 wheelClass.start()
-print("red: ", wheelClass.getRed(), " blue: ", wheelClass.getBlue(), " pink: ", wheelClass.getPink())
+
+if(wheelClass.getRed() == 1):
+    open_box()
 
 cv2.imshow("image", wheel)
 cv2.waitKey(0)
