@@ -13,6 +13,17 @@ def close_box():
     pyautogui.press('esc')
     win32api.mouse_event(win32con.MOUSEEVENTF_MOVE, -990, -990, 0, 0)
 
+def getScrap():
+    x, y, width, height = 705, 634, 80, 40
+
+    screenshot = pyautogui.screenshot(region=(x, y, width, height))
+
+    screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
+
+    pytesseract.pytesseract.tesseract_cmd = 'C:\\Users\\Beary\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract.exe'
+    text = pytesseract.image_to_string(screenshot)
+
+    return text.replace("x", "").replace(',', "")
 
 def putscrap(amount, roll):
     if(roll == 5 or roll == 10 or roll == 20):

@@ -8,25 +8,13 @@ from PIL import Image
 import pytesseract
 import imutils
 from scipy.spatial import KDTree
-from webcolors import css3_hex_to_names, hex_to_rgb
-
-    
+import webcolors
 
 
-def getScrap():
-    x, y, width, height = 705, 634, 80, 40
 
-    screenshot = pyautogui.screenshot(region=(x, y, width, height))
-
-    screenshot = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-
-    pytesseract.pytesseract.tesseract_cmd = 'C:\\Users\\Beary\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract.exe'
-    text = pytesseract.image_to_string(screenshot)
-
-    return text.replace("x", "").replace(',', "")
 
 def getWheelCircle():
-    x, y, width, height = 630, 230, 620, 390
+    x, y, width, height = 630, 220, 620, 390
     screenshot = pyautogui.screenshot(region=(x, y, width, height))
 
     screenshot = np.array(screenshot)
@@ -38,15 +26,21 @@ def getWheelCircle():
 
     cropped_img = cv2.bitwise_and(screenshot, screenshot, mask=mask)
 
-    h, w = cropped_img.shape[:2]
-    M = cv2.getRotationMatrix2D((w/2, h/2), -40, 1)
-    rotated_img = cv2.warpAffine(cropped_img, M, (w, h))
+    #h, w = cropped_img.shape[:2]
+    #M = cv2.getRotationMatrix2D((w/2, h/2), -40, 1)
+    #rotated_img = cv2.warpAffine(cropped_img, M, (w, h))
+    #height, width = rotated_img.shape[:2]
+    #img = rotated_img[:, :width//2]
 
-    height, width = rotated_img.shape[:2]
-    img = rotated_img[:, :width//2]
+    #M = cv2.getRotationMatrix2D(center, -90, 1.0)
 
-    return cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    #cv2.imwrite("wheel-images/wheel_current.png", img)
+    # Perform rotation
+    #img  = cv2.warpAffine(img, M, (w, h))
+
+    img = cv2.cvtColor(cropped_img, cv2.COLOR_RGB2BGR)
+    cv2.imwrite('tmp.png', img)
+    return img
+
 
 def percentage(part, whole):
     return (part * whole) / 100.0
@@ -55,15 +49,52 @@ def extract_numbers(s):
     digits = re.findall(r'\d+', s)
     return int(''.join(digits))
 
-def convert_rgb_to_names(rgb_tuple):
-    # a dictionary of all the hex and their respective names in css3
-    css3_db = css3_hex_to_names
-    names = []
-    rgb_values = []    
-    for color_hex, color_name in css3_db.items():
-        names.append(color_name)
-        rgb_values.append(hex_to_rgb(color_hex))
-    
-    kdt_db = KDTree(rgb_values)   
-    distance, index = kdt_db.query(rgb_tuple)
-    return f'closest match: {names[index]}'
+def getCount(img):
+
+    # Define the lower and upper boundaries for each color
+    red_lower = np.array([0, 0, 150])
+    red_upper = np.array([50, 50, 255])
+    pink_lower = np.array([150, 50, 150])
+    pink_upper = np.array([255, 150, 255])
+    blue_lower = np.array([150, 100, 0])
+    blue_upper = np.array([255, 225, 50])
+
+    # Threshold the image to obtain only the pixels that are within the color range
+    red_mask = cv2.inRange(img, red_lower, red_upper)
+    pink_mask = cv2.inRange(img, pink_lower, pink_upper)
+    blue_mask = cv2.inRange(img, blue_lower, blue_upper)
+
+    # Count the number of pixels in each color range
+    red_count = cv2.countNonZero(red_mask)
+    pink_count = cv2.countNonZero(pink_mask)
+    blue_count = cv2.countNonZero(blue_mask)
+
+    # Print the number of pixels found for each color
+    print(f"Red count: {red_count}")
+    print(f"Pink count: {pink_count}")
+    print(f"Blue count: {blue_count}")
+
+def get_color_name(rgb):
+    colors = {
+        "blue": (69, 104, 157),
+        "yellow": (162, 149, 74),
+        "green": (36,124, 12),
+        "yellow": (156,139,68),
+        "yellow": (149, 129, 112),
+        "yellow": (145, 110, 2),
+        "green": (63, 102, 43),
+        "blue": (84, 78, 91),
+        "yellow": (160, 146, 132),
+        "green": (98, 144, 52),
+        "yellow": (173, 151, 85),
+        "red": (178, 90, 41),
+        "pink": (134, 76, 130)
+    }
+    min_distance = float("inf")
+    closest_color = None
+    for color, value in colors.items():
+        distance = sum([(i - j) ** 2 for i, j in zip(rgb, value)])
+        if distance < min_distance:
+            min_distance = distance
+            closest_color = color
+    return closest_color
